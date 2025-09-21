@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../domain/entities/quiz.dart';
 
@@ -10,7 +11,17 @@ class QuizDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(quiz.name), backgroundColor: Theme.of(context).colorScheme.inversePrimary),
+      appBar: AppBar(
+        title: Text(quiz.name),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(
+            onPressed: () => _showShareDialog(context),
+            icon: const Icon(Icons.share),
+            tooltip: 'Поделиться квизом',
+          ),
+        ],
+      ),
       body: Column(
         children: [
           Container(
@@ -111,6 +122,53 @@ class QuizDetailPage extends StatelessWidget {
                       );
                     },
                   ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showShareDialog(BuildContext context) {
+    final quizUrl = 'https://quiz-app-hello-world.web.app/${quiz.id}';
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Поделиться квизом'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Ссылка на квиз "${quiz.name}":'),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: SelectableText(quizUrl, style: const TextStyle(fontFamily: 'monospace')),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Скопируйте ссылку и отправьте пользователям для прохождения квиза.',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Закрыть')),
+          ElevatedButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: quizUrl));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(const SnackBar(content: Text('Ссылка скопирована в буфер обмена')));
+              Navigator.pop(context);
+            },
+            icon: const Icon(Icons.copy),
+            label: const Text('Копировать'),
           ),
         ],
       ),
