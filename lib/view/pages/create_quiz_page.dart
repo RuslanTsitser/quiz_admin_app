@@ -37,78 +37,71 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.quiz == null ? 'Создать квиз' : 'Редактировать квиз'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [if (_questions.isNotEmpty) IconButton(onPressed: _saveQuiz, icon: const Icon(Icons.save))],
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Название квиза', border: OutlineInputBorder()),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Введите название квиза';
-                  }
-                  return null;
-                },
-              ),
-            ),
-            Expanded(
-              child: _questions.isEmpty
-                  ? const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.quiz_outlined, size: 64, color: Colors.grey),
-                          SizedBox(height: 16),
-                          Text('Нет вопросов', style: TextStyle(fontSize: 18, color: Colors.grey)),
-                          SizedBox(height: 8),
-                          Text('Нажмите + чтобы добавить вопрос', style: TextStyle(color: Colors.grey)),
-                        ],
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      itemCount: _questions.length,
-                      itemBuilder: (context, index) {
-                        return Card(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          child: ListTile(
-                            leading: CircleAvatar(child: Text('${index + 1}')),
-                            title: Text(_questions[index].questionText, maxLines: 2, overflow: TextOverflow.ellipsis),
-                            subtitle: Text('Вариантов: ${_questions[index].options.length}'),
-                            trailing: PopupMenuButton<String>(
-                              onSelected: (value) {
-                                if (value == 'edit') {
-                                  _editQuestion(index);
-                                } else if (value == 'delete') {
-                                  _deleteQuestion(index);
-                                }
-                              },
-                              itemBuilder: (context) => [
-                                const PopupMenuItem(value: 'edit', child: Text('Редактировать')),
-                                const PopupMenuItem(value: 'delete', child: Text('Удалить')),
-                              ],
-                            ),
-                            onTap: () => _editQuestion(index),
-                          ),
-                        );
-                      },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF6366F1), // Indigo-500
+              Color(0xFF8B5CF6), // Violet-500
+              Color(0xFFEC4899), // Pink-500
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              CreateQuizHeader(quiz: widget.quiz, hasQuestions: _questions.isNotEmpty, onSave: _saveQuiz),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC), // Slate-50
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        QuizNameField(controller: _nameController),
+                        Expanded(
+                          child: _questions.isEmpty
+                              ? const EmptyQuestionsState()
+                              : QuestionsList(
+                                  questions: _questions,
+                                  onEditQuestion: _editQuestion,
+                                  onDeleteQuestion: _deleteQuestion,
+                                ),
+                        ),
+                      ],
                     ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addQuestion,
-        tooltip: 'Добавить вопрос',
-        child: const Icon(Icons.add),
+        child: FloatingActionButton(
+          onPressed: _addQuestion,
+          tooltip: 'Добавить вопрос',
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
@@ -209,84 +202,75 @@ class _QuestionEditorPageState extends State<QuestionEditorPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.question == null ? 'Новый вопрос' : 'Редактировать вопрос'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [IconButton(onPressed: _saveQuestion, icon: const Icon(Icons.save))],
-      ),
-      body: Form(
-        key: _formKey,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextFormField(
-                controller: _questionController,
-                decoration: const InputDecoration(labelText: 'Текст вопроса', border: OutlineInputBorder()),
-                maxLines: 3,
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Введите текст вопроса';
-                  }
-                  return null;
-                },
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [Text('Варианты ответов', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))],
-              ),
-            ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _optionControllers.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 8),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8),
-                      child: Row(
-                        children: [
-                          Checkbox(
-                            value: _correctAnswers[index],
-                            onChanged: (value) {
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Color(0xFF6366F1), // Indigo-500
+              Color(0xFF8B5CF6), // Violet-500
+              Color(0xFFEC4899), // Pink-500
+            ],
+            stops: [0.0, 0.5, 1.0],
+          ),
+        ),
+        child: SafeArea(
+          child: Column(
+            children: [
+              QuestionEditorHeader(question: widget.question, onSave: _saveQuestion),
+              Expanded(
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFF8FAFC), // Slate-50
+                    borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                  ),
+                  child: Form(
+                    key: _formKey,
+                    child: Column(
+                      children: [
+                        QuestionTextField(controller: _questionController),
+                        const OptionsHeader(),
+                        Expanded(
+                          child: OptionsList(
+                            optionControllers: _optionControllers,
+                            correctAnswers: _correctAnswers,
+                            onRemoveOption: _removeOption,
+                            onCorrectAnswerChanged: (index, value) {
                               setState(() {
-                                _correctAnswers[index] = value ?? false;
+                                _correctAnswers[index] = value;
                               });
                             },
                           ),
-                          Expanded(
-                            child: TextFormField(
-                              controller: _optionControllers[index],
-                              decoration: InputDecoration(
-                                labelText: 'Вариант ${index + 1}',
-                                border: const OutlineInputBorder(),
-                              ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Введите вариант ответа';
-                                }
-                                return null;
-                              },
-                            ),
-                          ),
-                          IconButton(onPressed: () => _removeOption(index), icon: const Icon(Icons.delete)),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
+            ],
+          ),
+        ),
+      ),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _addOption,
-        tooltip: 'Добавить вариант',
-        child: const Icon(Icons.add),
+        child: FloatingActionButton(
+          onPressed: _addOption,
+          tooltip: 'Добавить вариант',
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
@@ -335,5 +319,563 @@ class _QuestionEditorPageState extends State<QuestionEditorPage> {
 
     widget.onSave(question);
     Navigator.pop(context);
+  }
+}
+
+class QuestionEditorHeader extends StatelessWidget {
+  final Question? question;
+  final VoidCallback onSave;
+
+  const QuestionEditorHeader({super.key, required this.question, required this.onSave});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  question == null ? 'Новый вопрос' : 'Редактировать вопрос',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  'Добавьте текст вопроса и варианты ответов',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              onPressed: onSave,
+              icon: const Icon(Icons.save, color: Colors.white),
+              tooltip: 'Сохранить вопрос',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class QuestionTextField extends StatelessWidget {
+  final TextEditingController controller;
+
+  const QuestionTextField({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: 'Текст вопроса',
+          hintText: 'Введите текст вашего вопроса',
+          prefixIcon: const Icon(Icons.help_outline, color: Color(0xFF6366F1)),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        maxLines: 3,
+        style: Theme.of(context).textTheme.titleMedium,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Введите текст вопроса';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+}
+
+class OptionsHeader extends StatelessWidget {
+  const OptionsHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: const Icon(Icons.list_alt, color: Color(0xFF6366F1), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Text(
+            'Варианты ответов',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              'Выберите правильные',
+              style: TextStyle(color: const Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class OptionsList extends StatelessWidget {
+  final List<TextEditingController> optionControllers;
+  final List<bool> correctAnswers;
+  final Function(int) onRemoveOption;
+  final Function(int, bool) onCorrectAnswerChanged;
+
+  const OptionsList({
+    super.key,
+    required this.optionControllers,
+    required this.correctAnswers,
+    required this.onRemoveOption,
+    required this.onCorrectAnswerChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: optionControllers.length,
+      itemBuilder: (context, index) {
+        return OptionCard(
+          controller: optionControllers[index],
+          index: index,
+          isCorrect: correctAnswers[index],
+          canRemove: optionControllers.length > 1,
+          onCorrectChanged: (value) => onCorrectAnswerChanged(index, value),
+          onRemove: () => onRemoveOption(index),
+        );
+      },
+    );
+  }
+}
+
+class OptionCard extends StatelessWidget {
+  final TextEditingController controller;
+  final int index;
+  final bool isCorrect;
+  final bool canRemove;
+  final Function(bool) onCorrectChanged;
+  final VoidCallback onRemove;
+
+  const OptionCard({
+    super.key,
+    required this.controller,
+    required this.index,
+    required this.isCorrect,
+    required this.canRemove,
+    required this.onCorrectChanged,
+    required this.onRemove,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [Colors.white, const Color(0xFFF8FAFC)],
+            ),
+            border: isCorrect
+                ? Border.all(color: const Color(0xFF10B981), width: 2)
+                : Border.all(color: const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: isCorrect ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Checkbox(
+                  value: isCorrect,
+                  onChanged: (value) => onCorrectChanged(value ?? false),
+                  activeColor: const Color(0xFF10B981),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: TextFormField(
+                  controller: controller,
+                  decoration: InputDecoration(
+                    labelText: 'Вариант ${index + 1}',
+                    hintText: 'Введите вариант ответа',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFF6366F1), width: 2),
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Введите вариант ответа';
+                    }
+                    return null;
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              if (canRemove)
+                Container(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: IconButton(
+                    onPressed: onRemove,
+                    icon: const Icon(Icons.delete_outline, color: Color(0xFFEF4444), size: 20),
+                    tooltip: 'Удалить вариант',
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class CreateQuizHeader extends StatelessWidget {
+  final Quiz? quiz;
+  final bool hasQuestions;
+  final VoidCallback onSave;
+
+  const CreateQuizHeader({super.key, required this.quiz, required this.hasQuestions, required this.onSave});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      child: Row(
+        children: [
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+            ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  quiz == null ? 'Создать квиз' : 'Редактировать квиз',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.headlineMedium?.copyWith(color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  quiz == null ? 'Создайте новый квиз' : 'Измените существующий квиз',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: Colors.white.withValues(alpha: 0.9)),
+                ),
+              ],
+            ),
+          ),
+          if (hasQuestions)
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: IconButton(
+                onPressed: onSave,
+                icon: const Icon(Icons.save, color: Colors.white),
+                tooltip: 'Сохранить квиз',
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class QuizNameField extends StatelessWidget {
+  final TextEditingController controller;
+
+  const QuizNameField({super.key, required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(16),
+      child: TextFormField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: 'Название квиза',
+          hintText: 'Введите название вашего квиза',
+          prefixIcon: const Icon(Icons.quiz_outlined, color: Color(0xFF6366F1)),
+          filled: true,
+          fillColor: Colors.white,
+        ),
+        style: Theme.of(context).textTheme.titleMedium,
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Введите название квиза';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+}
+
+class EmptyQuestionsState extends StatelessWidget {
+  const EmptyQuestionsState({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)]),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(Icons.quiz_outlined, size: 64, color: Colors.white),
+            ),
+            const SizedBox(height: 24),
+            Text('Нет вопросов', style: Theme.of(context).textTheme.headlineSmall),
+            const SizedBox(height: 8),
+            Text(
+              'Нажмите + чтобы добавить первый вопрос',
+              style: Theme.of(context).textTheme.bodyLarge,
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class QuestionsList extends StatelessWidget {
+  final List<Question> questions;
+  final Function(int) onEditQuestion;
+  final Function(int) onDeleteQuestion;
+
+  const QuestionsList({
+    super.key,
+    required this.questions,
+    required this.onEditQuestion,
+    required this.onDeleteQuestion,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      itemCount: questions.length,
+      itemBuilder: (context, index) {
+        return QuestionCard(
+          question: questions[index],
+          index: index,
+          onEdit: () => onEditQuestion(index),
+          onDelete: () => onDeleteQuestion(index),
+        );
+      },
+    );
+  }
+}
+
+class QuestionCard extends StatelessWidget {
+  final Question question;
+  final int index;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  const QuestionCard({
+    super.key,
+    required this.question,
+    required this.index,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Card(
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: onEdit,
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, const Color(0xFFF8FAFC)],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF6366F1).withValues(alpha: 0.1),
+                            const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        '${index + 1}',
+                        style: const TextStyle(color: Color(0xFF6366F1), fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            question.questionText,
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            '${question.options.length} вариантов ответа',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: const Color(0xFF64748B)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') {
+                          onEdit();
+                        } else if (value == 'delete') {
+                          onDelete();
+                        }
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Row(
+                            children: [
+                              Icon(Icons.edit, color: Color(0xFF6366F1)),
+                              SizedBox(width: 8),
+                              Text('Редактировать'),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(Icons.delete, color: Color(0xFFEF4444)),
+                              SizedBox(width: 8),
+                              Text('Удалить'),
+                            ],
+                          ),
+                        ),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(Icons.more_vert, color: Color(0xFF64748B)),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Готов',
+                        style: TextStyle(color: const Color(0xFF10B981), fontSize: 12, fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    const Spacer(),
+                    Icon(Icons.arrow_forward_ios, size: 16, color: const Color(0xFF94A3B8)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }
