@@ -1,0 +1,49 @@
+{
+  "project_info": {
+    "project_number": "415113993788",
+    "firebase_url": "https://quiz-app-hello-world-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "quiz-app-hello-world",
+    "storage_bucket": "quiz-app-hello-world.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:415113993788:android:3c5f6f680a20db822bed39",
+        "android_client_info": {
+          "package_name": "com.example.quiz_admin_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4jNsAsct4LsVO_LPFAYfZIpN7Xzz3kUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:415113993788:android:db4610e59b61ddd42bed39",
+        "android_client_info": {
+          "package_name": "com.example.quiz_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB4jNsAsct4LsVO_LPFAYfZIpN7Xzz3kUw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
