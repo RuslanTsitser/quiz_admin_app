@@ -23,9 +23,6 @@ class QuizDetailPage extends StatelessWidget {
                 Text(quiz.name, style: Theme.of(context).textTheme.headlineSmall),
                 const SizedBox(height: 8),
                 Text('Вопросов: ${quiz.questions.length}', style: Theme.of(context).textTheme.bodyLarge),
-                const SizedBox(height: 4),
-                Text('Создан: ${_formatDate(quiz.createdAt)}', style: Theme.of(context).textTheme.bodyMedium),
-                Text('Обновлен: ${_formatDate(quiz.updatedAt)}', style: Theme.of(context).textTheme.bodyMedium),
               ],
             ),
           ),
@@ -118,9 +115,5 @@ class QuizDetailPage extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.day}.${date.month}.${date.year} ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
   }
 }
