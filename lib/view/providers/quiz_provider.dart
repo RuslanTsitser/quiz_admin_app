@@ -20,6 +20,8 @@ class QuizProvider with ChangeNotifier {
     _setLoading(true);
     try {
       _quizzes = await _repository.getAllQuizzes();
+      // Сортируем квизы по дате создания (новые сверху)
+      _quizzes.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       _error = null;
     } catch (e) {
       _error = e.toString();

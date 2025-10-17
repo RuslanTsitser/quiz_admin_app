@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/entities/quiz.dart';
@@ -279,6 +280,14 @@ class QuizCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 14,
                               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Создан: ${DateFormat('dd.MM.yyyy HH:mm').format(quiz.createdAt)}',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                             ),
                           ),
                         ],

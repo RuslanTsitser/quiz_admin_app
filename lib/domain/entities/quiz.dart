@@ -1,14 +1,22 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'question.dart';
 
 class Quiz {
   final String id;
   final String name;
   final List<Question> questions;
+  final DateTime createdAt;
 
-  const Quiz({required this.id, required this.name, required this.questions});
+  const Quiz({required this.id, required this.name, required this.questions, required this.createdAt});
 
-  Quiz copyWith({String? id, String? name, List<Question>? questions}) {
-    return Quiz(id: id ?? this.id, name: name ?? this.name, questions: questions ?? this.questions);
+  Quiz copyWith({String? id, String? name, List<Question>? questions, DateTime? createdAt}) {
+    return Quiz(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      questions: questions ?? this.questions,
+      createdAt: createdAt ?? this.createdAt,
+    );
   }
 
   @override
@@ -24,11 +32,15 @@ class Quiz {
 
   @override
   String toString() {
-    return 'Quiz(id: $id, name: $name, questions: $questions)';
+    return 'Quiz(id: $id, name: $name, questions: $questions, createdAt: $createdAt)';
   }
 
   Map<String, dynamic> toJson() {
-    return {'name': name, 'questions': questions.map((q) => q.toJson()).toList()};
+    return {
+      'name': name,
+      'questions': questions.map((q) => q.toJson()).toList(),
+      'createdAt': Timestamp.fromDate(createdAt),
+    };
   }
 
   factory Quiz.fromJson(Map<String, dynamic> json, String id) {
@@ -36,6 +48,7 @@ class Quiz {
       id: id,
       name: json['name'] as String,
       questions: (json['questions'] as List).map((q) => Question.fromJson(q as Map<String, dynamic>)).toList(),
+      createdAt: json['createdAt'] != null ? (json['createdAt'] as Timestamp).toDate() : DateTime.now(),
     );
   }
 }

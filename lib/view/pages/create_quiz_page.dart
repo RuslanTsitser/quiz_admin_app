@@ -111,7 +111,12 @@ class _CreateQuizPageState extends State<CreateQuizPage> {
       return;
     }
 
-    final quiz = Quiz(id: widget.quiz?.id ?? '', name: _nameController.text, questions: _questions);
+    final quiz = Quiz(
+      id: widget.quiz?.id ?? '',
+      name: _nameController.text,
+      questions: _questions,
+      createdAt: widget.quiz?.createdAt ?? DateTime.now(),
+    );
 
     if (widget.quiz == null) {
       context.read<QuizProvider>().createQuiz(quiz);
