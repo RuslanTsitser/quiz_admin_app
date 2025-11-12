@@ -1,16 +1,83 @@
 # quiz_admin_app
 
-A new Flutter project.
+Приложение для администрирования квизов на Flutter с использованием Firestore.
 
-## Getting Started
+## Структура Firestore
 
-This project is a starting point for a Flutter application.
+Приложение использует Cloud Firestore для хранения данных о квизах. Ниже описана структура коллекций и документов.
 
-A few resources to get you started if this is your first Flutter project:
+### Коллекция: `quizzes`
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+Коллекция содержит документы с информацией о квизах. Каждый документ имеет автоматически сгенерированный ID.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+#### Структура документа в коллекции `quizzes`
+
+```json
+{
+  "name": "string",
+  "questions": [
+    {
+      "questionText": "string",
+      "options": ["string", "string", ...],
+      "correctAnswerIndexes": [0, 1, ...]
+    }
+  ],
+  "createdAt": "Timestamp"
+}
+```
+
+#### Поля документа
+
+| Поле | Тип | Описание | Обязательное |
+|------|-----|----------|--------------|
+| `name` | `string` | Название квиза | Да |
+| `questions` | `array` | Массив объектов вопросов | Да |
+| `createdAt` | `Timestamp` | Дата и время создания квиза | Да |
+
+#### Структура объекта вопроса (элемент массива `questions`)
+
+| Поле | Тип | Описание | Обязательное |
+|------|-----|----------|--------------|
+| `questionText` | `string` | Текст вопроса | Да |
+| `options` | `array<string>` | Массив вариантов ответов | Да |
+| `correctAnswerIndexes` | `array<number>` | Массив индексов правильных ответов (начиная с 0) | Да |
+
+#### Пример документа
+
+```json
+{
+  "name": "Тест по математике",
+  "questions": [
+    {
+      "questionText": "Сколько будет 2 + 2?",
+      "options": ["3", "4", "5", "6"],
+      "correctAnswerIndexes": [1]
+    },
+    {
+      "questionText": "Какие числа являются четными?",
+      "options": ["2", "3", "4", "5"],
+      "correctAnswerIndexes": [0, 2]
+    }
+  ],
+  "createdAt": {
+    "_seconds": 1704067200,
+    "_nanoseconds": 0
+  }
+}
+```
+
+### Операции с коллекцией `quizzes`
+
+Приложение поддерживает следующие операции:
+
+- **Создание** - добавление нового документа в коллекцию
+- **Чтение** - получение всех квизов или квиза по ID
+- **Обновление** - изменение существующего документа
+- **Удаление** - удаление документа по ID
+
+### Примечания
+
+- ID документа генерируется автоматически при создании
+- Поле `createdAt` хранится как Firestore Timestamp
+- Массив `correctAnswerIndexes` может содержать несколько индексов для вопросов с несколькими правильными ответами
+- Индексы в `correctAnswerIndexes` соответствуют позициям в массиве `options` (начиная с 0)
